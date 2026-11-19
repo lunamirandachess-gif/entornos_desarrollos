@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es" data-mode="login">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PLANTA UN ÁRBOL</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+/* Inicio de sesión: fondos verdes claros, detalles morados */
+:root[data-mode="login"]{--bg:#e3f4dc;--card:#f4fbf0;--field:#ffffff;--base:#b9e0a9;--accent:#7b3fb0;--accent-soft:#e9dcf6;--text:#26402a;--on-accent:#ffffff;--leaf:#4e9a4a}
+/* Crear usuario: colores invertidos */
+:root[data-mode="signup"]{--bg:#eadcf7;--card:#f6effc;--field:#ffffff;--base:#cfb3ea;--accent:#3f9a4a;--accent-soft:#d9f0d2;--text:#3a2552;--on-accent:#ffffff;--leaf:#7b3fb0}
+@media (prefers-color-scheme:dark){
+:root:not([data-theme="light"])[data-mode="login"]{--bg:#1d2f1f;--card:#263d29;--field:#1a2a1c;--base:#3f6b3d;--accent:#c39be6;--accent-soft:#3a2a4d;--text:#e6f4e1;--on-accent:#24103a;--leaf:#8fd08a}
+:root:not([data-theme="light"])[data-mode="signup"]{--bg:#2a1d3a;--card:#38264d;--field:#241733;--base:#6a4b8f;--accent:#8fd08a;--accent-soft:#25402a;--text:#f0e6fa;--on-accent:#12300f;--leaf:#c39be6}}
+:root[data-theme="dark"][data-mode="login"]{--bg:#1d2f1f;--card:#263d29;--field:#1a2a1c;--base:#3f6b3d;--accent:#c39be6;--accent-soft:#3a2a4d;--text:#e6f4e1;--on-accent:#24103a;--leaf:#8fd08a}
+:root[data-theme="dark"][data-mode="signup"]{--bg:#2a1d3a;--card:#38264d;--field:#241733;--base:#6a4b8f;--accent:#8fd08a;--accent-soft:#25402a;--text:#f0e6fa;--on-accent:#12300f;--leaf:#c39be6}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:"Trebuchet MS",Verdana,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px;transition:background .4s,color .4s}
+header{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin:8px 0 22px}
+h1{margin:0;font-size:clamp(2.2rem,8vw,4rem);letter-spacing:.04em;color:var(--accent);text-shadow:2px 2px 0 var(--base);text-align:center;transition:color .4s}
+.tree{width:clamp(64px,14vw,96px);height:auto;flex:none}
+.tree .crown{fill:var(--leaf);transition:fill .4s}.tree .crown2{fill:var(--accent);transition:fill .4s}.tree .trunk{fill:#8a5a3a}
+main{width:100%;max-width:460px}
+.card{background:var(--card);border:3px solid var(--base);border-top:8px solid var(--accent);border-radius:20px;padding:26px 24px;box-shadow:0 8px 24px rgba(0,0,0,.12);transition:background .4s,border-color .4s}
+h2{margin:0 0 18px;font-size:1.35rem;letter-spacing:.08em;color:var(--accent);text-align:center}
+label{display:block;font-weight:700;margin:14px 0 6px;font-size:.95rem}
+.opt{font-weight:400;opacity:.7;font-size:.85rem}
+.req{color:var(--accent);margin-left:2px}
+input{width:100%;padding:11px 12px;font:inherit;color:var(--text);background:var(--field);border:2px solid var(--base);border-radius:10px;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.row{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
+button{font:inherit;font-weight:700;cursor:pointer;border-radius:12px;padding:12px 18px;border:2px solid var(--accent);transition:transform .1s,background .2s}
+button:active{transform:scale(.97)}
+.primary{background:var(--accent);color:var(--on-accent);flex:1}
+.secondary{background:transparent;color:var(--accent);flex:1}
+.secondary:hover{background:var(--accent-soft)}
+.full{width:100%;margin-top:22px}
+.link{background:none;border:none;color:var(--accent);text-decoration:underline;margin:14px auto 0;display:block;padding:4px;font-weight:400}
+.msg{margin-top:16px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:.92rem;display:none}
+.msg.show{display:block}
+.note{font-size:.8rem;opacity:.75;margin-top:14px;text-align:center}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>PLANTA UN ÁRBOL</h1>
+  <svg class="tree" viewBox="0 0 100 120" role="img" aria-label="Árbol">
+    <rect class="trunk" x="43" y="68" width="14" height="46" rx="3"/>
+    <circle class="crown" cx="50" cy="38" r="30"/>
+    <circle class="crown2" cx="34" cy="50" r="18" opacity=".85"/>
+    <circle class="crown2" cx="66" cy="48" r="16" opacity=".7"/>
+    <circle class="crown" cx="50" cy="22" r="14"/>
+  </svg>
+</header>
+
+<main>
+  <section id="loginView" class="card">
+    <h2>INICIO DE SESIÓN</h2>
+    <form id="loginForm" novalidate>
+      <label for="lEmail">Correo electrónico<span class="req">*</span></label>
+      <input id="lEmail" type="email" autocomplete="email" required>
+      <label for="lPass">Contraseña<span class="req">*</span></label>
+      <input id="lPass" type="password" autocomplete="current-password" required>
+      <div class="row">
+        <button type="submit" class="primary">Entrar</button>
+        <button type="button" class="secondary" id="toSignup">Crear usuario</button>
+      </div>
+      <div class="msg" id="lMsg" role="status"></div>
+    </form>
+  </section>
+
+  <section id="signupView" class="card" hidden>
+    <h2>CREAR USUARIO</h2>
+    <form id="signupForm" novalidate>
+      <label for="sName">Nombre<span class="req">*</span></label>
+      <input id="sName" type="text" autocomplete="given-name" required>
+      <label for="sSurname">Apellidos<span class="req">*</span></label>
+      <input id="sSurname" type="text" autocomplete="family-name" required>
+      <label for="sAlias">Alias <span class="opt">(opcional)</span></label>
+      <input id="sAlias" type="text" autocomplete="nickname">
+      <label for="sBirth">Fecha de nacimiento<span class="req">*</span></label>
+      <input id="sBirth" type="date" autocomplete="bday" required>
+      <label for="sEmail">Correo electrónico<span class="req">*</span></label>
+      <input id="sEmail" type="email" autocomplete="email" required>
+      <label for="sPass">Contraseña<span class="req">*</span></label>
+      <input id="sPass" type="password" autocomplete="new-password" minlength="6" required>
+      <label for="sPass2">Repetir contraseña<span class="req">*</span></label>
+      <input id="sPass2" type="password" autocomplete="new-password" required>
+      <button type="submit" class="primary full">Crear nuevo usuario</button>
+      <div class="msg" id="sMsg" role="status"></div>
+      <button type="button" class="link" id="toLogin">← Volver al inicio de sesión</button>
+    </form>
+  </section>
+  <p class="note">Los campos marcados con * son obligatorios.</p>
+</main>
+
+<script>
+const root=document.documentElement,$=id=>document.getElementById(id);
+function show(mode){
+  root.dataset.mode=mode;
+  $("loginView").hidden=mode!=="login";
+  $("signupView").hidden=mode!=="signup";
+  window.scrollTo(0,0);
+}
+function msg(el,text){el.textContent=text;el.classList.add("show")}
+$("toSignup").onclick=()=>show("signup");
+$("toLogin").onclick=()=>show("login");
+$("sBirth").max=new Date().toISOString().slice(0,10);
+
+$("loginForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const m=$("lMsg");m.classList.remove("show");
+  if(!$("lEmail").value.trim()||!$("lPass").value){return msg(m,"Rellena el correo electrónico y la contraseña.")}
+  if(!$("lEmail").checkValidity()){return msg(m,"Introduce un correo electrónico válido.")}
+  msg(m,"¡Bienvenido/a! Has iniciado sesión (demostración).");
+});
+
+$("signupForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const m=$("sMsg");m.classList.remove("show");
+  const req=["sName","sSurname","sBirth","sEmail","sPass","sPass2"];
+  if(req.some(id=>!$(id).value.trim())){return msg(m,"Rellena todos los campos obligatorios (*).")}
+  if(!$("sEmail").checkValidity()){return msg(m,"Introduce un correo electrónico válido.")}
+  if($("sPass").value.length<6){return msg(m,"La contraseña debe tener al menos 6 caracteres.")}
+  if($("sPass").value!==$("sPass2").value){return msg(m,"Las contraseñas no coinciden.")}
+  msg(m,"¡Usuario creado! Gracias por plantar tu árbol 🌱 (demostración).");
+  e.target.reset();
+});
+</script>
+</body>
+</html>
