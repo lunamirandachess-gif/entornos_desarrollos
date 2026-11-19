@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLANTA UN ÁRBOL — Colabora con la Naturaleza</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka & Inter para una tipografía redondeada y amigable similar a la captura -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-forest: #1b2e1e;
+            --bg-forest-light: #233b27;
+            --lavender-main: #c0a1ec;
+            --lavender-dark: #a682dc;
+            --mint-leaf: #8bc98a;
+            --mint-shadow: #4a784e;
+            --trunk-brown: #78553a;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-forest);
+            font-family: 'Inter', sans-serif;
+            color: #eef5ef;
+        }
+
+        /* Tipografía principal fiel a la captura */
+        .title-font {
+            font-family: 'Fredoka', sans-serif;
+            letter-spacing: 0.04em;
+            color: var(--lavender-main);
+            text-shadow: 3px 4px 0px rgba(74, 120, 78, 0.55);
+        }
+
+        /* Animación flotante muy sutil para el icono del título */
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-4px) rotate(1.5deg); }
+        }
+
+        .logo-tree-float {
+            animation: gentleFloat 6s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        /* Botón principal estilo captura */
+        .btn-lavender {
+            background-color: var(--lavender-main);
+            color: #1b2e1e;
+            font-weight: 600;
+            border-radius: 14px;
+            transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 6px 20px rgba(192, 161, 236, 0.22);
+        }
+
+        .btn-lavender:hover {
+            background-color: #cfb5f3;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 26px rgba(192, 161, 236, 0.35);
+        }
+
+        .btn-lavender:active {
+            transform: translateY(1px) scale(0.99);
+        }
+
+        /* Botón secundario contorno lavanda (como "Crear usuario" en la captura) */
+        .btn-outline-lavender {
+            background-color: rgba(27, 46, 30, 0.65);
+            color: #d8c6f3;
+            border: 1.5px solid var(--lavender-main);
+            border-radius: 14px;
+            backdrop-filter: blur(4px);
+            transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .btn-outline-lavender:hover {
+            background-color: rgba(192, 161, 236, 0.15);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* Canvas ocupa toda la pantalla de fondo */
+        #natureCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: block;
+        }
+
+        /* Capa de interfaz central */
+        #uiLayer {
+            position: relative;
+            z-index: 10;
+            pointer-events: none; /* Permite hacer clic en el canvas alrededor */
+        }
+
+        .interactive-element {
+            pointer-events: auto;
+        }
+
+        /* Modal suave de bienvenida / acción */
+        .soft-card {
+            background-color: rgba(31, 51, 34, 0.92);
+            border: 1.5px solid rgba(192, 161, 236, 0.45);
+            border-top: 6px solid var(--lavender-main);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+        }
+    </style>
+</head>
+<body class="relative flex flex-col items-center justify-center min-h-screen">
+
+    <!-- Lienzo animado del bosque, viento, hojas, conejos y pájaros -->
+    <canvas id="natureCanvas"></canvas>
+
+    <!-- Contenido principal centrado -->
+    <main id="uiLayer" class="w-full max-w-4xl px-6 flex flex-col items-center text-center -mt-12 sm:-mt-16">
+        
+        <!-- Encabezado con Título + Icono de Árbol idéntico a la imagen -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-6">
+            <h1 class="title-font text-4xl sm:text-6xl md:text-7xl font-bold tracking-wide uppercase">
+                PLANTA UN ÁRBOL
+            </h1>
+
+            <!-- SVG fiel al árbol de la captura -->
+            <div class="logo-tree-float flex-shrink-0" aria-hidden="true">
+                <svg width="76" height="92" viewBox="0 0 76 92" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Tronco marrón redondeado -->
+                    <rect x="33" y="46" width="10" height="40" rx="5" fill="#78553A"/>
+                    <!-- Copa principal verde menta -->
+                    <circle cx="38" cy="30" r="22" fill="#8BC98A"/>
+                    <!-- Dos círculos lavanda translúcidos superpuestos -->
+                    <circle cx="28" cy="38" r="14" fill="#C0A1EC" fill-opacity="0.72"/>
+                    <circle cx="48" cy="38" r="14" fill="#C0A1EC" fill-opacity="0.65"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Frase inspiradora sobre colaborar para plantar árboles y proteger la fauna -->
+        <p class="max-w-xl text-base sm:text-xl md:text-[1.22rem] leading-relaxed text-[#e6efe7] font-normal mb-9 px-2 drop-shadow-sm">
+            Colabora con nuestra comunidad para <span class="text-[#c0a1ec] font-medium">plantar más árboles</span>, regenerar bosques nativos y devolver un hogar lleno de vida a <span class="text-[#8bc98a] font-medium">nuestra fauna</span>.
+        </p>
+
+        <!-- Botones de acción con la misma línea estética -->
+        <div class="interactive-element flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+            <button id="btnStart" class="btn-lavender px-9 py-3.5 text-base sm:text-lg w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2.5">
+                <span>Comenzar a plantar</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"></path>
+                    <path d="m12 5 7 7-7 7"></path>
+                </svg>
+            </button>
+
+            <button id="btnBreeze" class="btn-outline-lavender px-7 py-3.5 text-base sm:text-lg w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2" title="Envía una brisa suave por el bosque">
+                <span>Sentir la brisa</span>
+            </button>
+        </div>
+
+        <!-- Pequeño indicador sutil interactivo -->
+        <p class="mt-6 text-xs sm:text-sm text-[#9ab39e] tracking-wide opacity-85">
+            Haz clic en cualquier árbol o madriguera para interactuar suavemente con el bosque
+        </p>
+    </main>
+
+    <!-- Cuadro de diálogo elegante (sin usar alert) al pulsar Comenzar -->
+    <div id="welcomeModal" class="fixed inset-0 z-30 hidden items-center justify-center bg-black/50 backdrop-blur-xs px-4">
+        <div class="soft-card rounded-2xl max-w-md w-full p-7 text-center transform transition-all">
+            <div class="mx-auto mb-4 w-14 h-14 rounded-full bg-[#2a452e] flex items-center justify-center border border-[#c0a1ec]/40">
+                <svg width="30" height="36" viewBox="0 0 76 92" fill="none">
+                    <rect x="33" y="46" width="10" height="40" rx="5" fill="#78553A"/>
+                    <circle cx="38" cy="30" r="22" fill="#8BC98A"/>
+                    <circle cx="28" cy="38" r="14" fill="#C0A1EC" fill-opacity="0.75"/>
+                    <circle cx="48" cy="38" r="14" fill="#C0A1EC" fill-opacity="0.65"/>
+                </svg>
+            </div>
+            <h2 class="title-font text-2xl font-semibold uppercase mb-2">¡Bienvenido al Bosque!</h2>
+            <p class="text-sm sm:text-base text-[#dce8de] leading-relaxed mb-6">
+                Cada árbol que plantamos juntos se convierte en refugio para los pájaros y sombra para los pequeños habitantes del suelo. ¿Listo para iniciar sesión o unirte?
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button id="closeModalBtn" class="btn-lavender px-6 py-2.5 text-sm sm:text-base cursor-pointer">
+                    Seguir explorando
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ESCENA ANIMADA "PLANTA UN ÁRBOL"
+         * Renderizado fluido a 60fps en HTML5 Canvas.
+         * Incluye:
+         * - Colinas suaves en capas verde bosque profundo.
+         * - Árboles minimalistas (menta + lavanda translúcida) meciéndose con el viento.
+         * - Hojas flotando y cayendo suavemente con movimiento pendular orgánico.
+         * - Madrigueras en la tierra con conejitos que asoman, mueven sus orejas y regresan.
+         * - Pájaros minimalistas que vuelan, se posan en las copas de los árboles y vuelven a volar.
+         */
+
+        const canvas = document.getElementById('natureCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        // Estado global del viento (suave y armónico)
+        let time = 0;
+        let gustBoost = 0; // Impulso temporal cuando el usuario pulsa "Sentir la brisa"
+
+        // Paleta exacta de la imagen
+        const COLORS = {
+            bg: '#1b2e1e',
+            hillBack: '#17271a',
+            hillMid: '#1f3523',
+            hillFront: '#253f2a',
+            trunk: '#78553a',
+            trunkDark: '#5e412b',
+            mint: '#8bc98a',
+            mintSoft: '#7ab879',
+            lavender: 'rgba(192, 161, 236, 0.70)',
+            lavenderLight: 'rgba(205, 178, 242, 0.58)',
+            burrowDark: '#121f14',
+            burrowRim: '#3a2c20',
+            bunnyBody: '#e8e2ee',
+            bunnyEarInner: '#c0a1ec',
+            birdBody: '#c0a1ec',
+            birdWing: '#9d79d4'
+        };
+
+        // Colecciones de entidades
+        let trees = [];
+        let leaves = [];
+        let bunnies = [];
+        let birds = [];
+        let grassBlades = [];
+
+        // Altura del suelo según posición X para que todo apoye orgánicamente en las colinas
+        function getGroundY(x) {
+            const base = height * 0.87;
+            const wave1 = Math.sin(x * 0.0022) * (height * 0.025);
+            const wave2 = Math.cos(x * 0.005 + 1.2) * (height * 0.012);
+            return base + wave1 + wave2;
+        }
+
+        // ==========================================
+        // CLASE: ÁRBOL MINIMALISTA MECIDO POR EL VIENTO
+        // ==========================================
+        class Tree {
+            constructor(x, scale, layer, hasLavender = true) {
+                this.x = x;
+                this.scale = scale;
+                this.layer = layer; // 0: fondo, 1: primer plano
+                this.hasLavender = hasLavender;
+                this.phase = Math.random() * Math.PI * 2;
+                this.swaySpeed = 0.0009 + Math.random() * 0.0004;
+                this.extraSway = 0; // Para interacción al hacer clic
+                this.perchPoints = []; // Puntos donde pueden posarse los pájaros
+            }
+
+            update(dt) {
+                this.extraSway *= 0.94;
+            }
+
+            draw(ctx, t, windForce) {
+                const groundY = getGroundY(this.x) + (this.layer === 0 ? -18 : 8);
+                // Ángulo de balanceo suave con el viento
+                const baseSway = Math.sin(t * this.swaySpeed + this.phase) * 0.032;
+                const windAngle = (baseSway + windForce * 0.045 + this.extraSway);
+
+                ctx.save();
+                ctx.translate(this.x, groundY);
+                ctx.scale(this.scale, this.scale);
+                ctx.rotate(windAngle);
+
+                const opacity = this.layer === 0 ? 0.55 : 1.0;
+                ctx.globalAlpha = opacity;
+
+                // Tronco marrón redondeado (estilo exacto de la captura)
+                const trunkW = 14;
+                const trunkH = 68;
+                ctx.fillStyle = this.layer === 0 ? COLORS.trunkDark : COLORS.trunk;
+                this.roundRect(ctx, -trunkW / 2, -trunkH, trunkW, trunkH + 6, 7);
+                ctx.fill();
+
+                // La copa tiene un ligero desfase elástico respecto al tronco
+                ctx.save();
+                ctx.translate(0, -trunkH + 6);
+                ctx.rotate(windAngle * 0.65);
+
+                // Copa principal verde menta
+                ctx.fillStyle = this.layer === 0 ? COLORS.mintSoft : COLORS.mint;
+                ctx.beginPath();
+                ctx.arc(0, -24, 34, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Círculos lavanda translúcidos superpuestos (firma visual del proyecto)
+                if (this.hasLavender) {
+                    ctx.fillStyle = COLORS.lavender;
+                    ctx.beginPath();
+                    ctx.arc(-16, -12, 21, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = COLORS.lavenderLight;
+                    ctx.beginPath();
+                    ctx.arc(16, -12, 21, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Calcular coordenadas globales aproximadas para que los pájaros se posen en la copa
+                const worldTopX = this.x + Math.sin(windAngle) * (trunkH + 48) * this.scale;
+                const worldTopY = groundY - Math.cos(windAngle) * (trunkH + 54) * this.scale;
+                this.perchPoints = [
+                    { x: worldTopX - 10 * this.scale, y: worldTopY + 4 * this.scale },
+                    { x: worldTopX + 12 * this.scale, y: worldTopY + 6 * this.scale }
+                ];
+
+                ctx.restore();
+                ctx.restore();
+            }
+
+            roundRect(ctx, x, y, w, h, r) {
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.closePath();
+            }
+        }
+
+        // ==========================================
+        // CLASE: HOJA FLOTANDO CON LA BRISA
+        // ==========================================
+        class Leaf {
+            constructor(randomY = false) {
+                this.reset(randomY);
+            }
+
+            reset(randomY = false) {
+                this.x = Math.random() * (width + 200) - 100;
+                this.y = randomY ? Math.random() * height * 0.85 : -20 - Math.random() * 100;
+                this.size = 4.5 + Math.random() * 4.5;
+                this.speedY = 0.28 + Math.random() * 0.35; // Caída muy pausada
+                this.speedX = 0.25 + Math.random() * 0.4;
+                this.swayFreq = 0.0012 + Math.random() * 0.0012;
+                this.swayAmp = 25 + Math.random() * 35;
+                this.phase = Math.random() * Math.PI * 2;
+                this.rot = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.015;
+                // Alterna entre hojas verde menta y pétalos/hojas lavanda
+                this.isLavender = Math.random() > 0.68;
+            }
+
+            update(t, windForce) {
+                this.y += this.speedY;
+                this.x += this.speedX + windForce * 1.4 + Math.cos(t * this.swayFreq + this.phase) * 0.45;
+                this.rot += this.rotSpeed + windForce * 0.01;
+
+                if (this.y > getGroundY(this.x) + 10 || this.x > width + 120) {
+                    this.reset(false);
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rot);
+                ctx.fillStyle = this.isLavender ? 'rgba(192, 161, 236, 0.72)' : 'rgba(139, 201, 138, 0.78)';
+                
+                // Forma orgánica de hoja minimalista
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size);
+                ctx.quadraticCurveTo(this.size * 0.9, 0, 0, this.size);
+                ctx.quadraticCurveTo(-this.size * 0.9, 0, 0, -this.size);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
+        // CLASE: CONEJITO EN MADRIGUERA DE TIERRA
+        // ==========================================
+        class BunnyBurrow {
+            constructor(x, scale = 1) {
+                this.x = x;
+                this.scale = scale;
+                // Estados: 'hidden', 'peeking', 'out', 'hiding'
+                this.state = 'hidden';
+                this.timer = 1500 + Math.random() * 5000;
+                this.progress = 0; // 0 = escondido bajo tierra, 1 = completamente asomado
+                this.earWiggle = 0;
+                this.lookDir = Math.random() > 0.5 ? 1 : -1;
+            }
+
+            triggerPeek() {
+                if (this.state === 'hidden') {
+                    this.state = 'peeking';
+                }
+            }
+
+            update(dt, t) {
+                this.timer -= dt;
+
+                if (this.state === 'hidden') {
+                    this.progress = 0;
+                    if (this.timer <= 0) {
+                        this.state = 'peeking';
+                        this.lookDir = Math.random() > 0.5 ? 1 : -1;
+                    }
+                } else if (this.state === 'peeking') {
+                    this.progress += dt * 0.00075; // Sale muy despacito y tierno
+                    if (this.progress >= 1) {
+                        this.progress = 1;
+                        this.state = 'out';
+                        this.timer = 3200 + Math.random() * 2800; // Se queda mirando un rato
+                    }
+                } else if (this.state === 'out') {
+                    // Movimiento suave de orejas mientras observa el bosque
+                    this.earWiggle = Math.sin(t * 0.005) * 0.14;
+                    if (this.timer <= 0) {
+                        this.state = 'hiding';
+                    }
+                } else if (this.state === 'hiding') {
+                    this.progress -= dt * 0.00085; // Vuelve a entrar suavemente
+                    if (this.progress <= 0) {
+                        this.progress = 0;
+                        this.state = 'hidden';
+                        this.timer = 4500 + Math.random() * 6500;
+                    }
+                }
+            }
+
+            draw(ctx) {
+                const y = getGroundY(this.x) + 14;
+                // Curva suave (easeInOutCubic) para que el movimiento sea orgánico
+                const ease = this.progress < 0.5
+                    ? 4 * this.progress * this.progress * this.progress
+                    : 1 - Math.pow(-2 * this.progress + 2, 3) / 2;
+
+                ctx.save();
+                ctx.translate(this.x, y);
+                ctx.scale(this.scale, this.scale);
+
+                // 1. Parte trasera del montículo de tierra
+                ctx.fillStyle = COLORS.burrowRim;
+                ctx.beginPath();
+                ctx.ellipse(0, 2, 26, 9, 0, Math.PI, Math.PI * 2);
+                ctx.fill();
+
+                // 2. Interior oscuro de la madriguera
+                ctx.fillStyle = COLORS.burrowDark;
+                ctx.beginPath();
+                ctx.ellipse(0, 2, 20, 6.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 3. Máscara de recorte para que el conejito salga desde dentro de la tierra
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(-35, -75, 70, 77);
+                ctx.clip();
+
+                // Posición vertical del conejito según progreso
+                const bunnyOffsetY = 34 * (1 - ease);
+                ctx.translate(0, bunnyOffsetY);
+
+                // Oreja trasera
+                ctx.save();
+                ctx.translate(-5 * this.lookDir, -24);
+                ctx.rotate(-0.15 * this.lookDir - this.earWiggle * 0.6);
+                ctx.fillStyle = '#d4cde0';
+                ctx.beginPath();
+                ctx.ellipse(0, -10, 4.2, 13, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Oreja delantera con interior lavanda suave
+                ctx.save();
+                ctx.translate(4 * this.lookDir, -24);
+                ctx.rotate(0.18 * this.lookDir + this.earWiggle);
+                ctx.fillStyle = COLORS.bunnyBody;
+                ctx.beginPath();
+                ctx.ellipse(0, -11, 4.5, 14, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = COLORS.bunnyEarInner;
+                ctx.beginPath();
+                ctx.ellipse(0, -11, 2.2, 9.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Cabeza y cuerpecito redondeado del conejo
+                ctx.fillStyle = COLORS.bunnyBody;
+                ctx.beginPath();
+                ctx.arc(0, -13, 12.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.ellipse(0, -2, 14, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ojito tierno
+                ctx.fillStyle = '#1b2e1e';
+                ctx.beginPath();
+                ctx.arc(5 * this.lookDir, -14, 1.8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Naricita lavanda
+                ctx.fillStyle = '#c0a1ec';
+                ctx.beginPath();
+                ctx.arc(10.5 * this.lookDir, -11.5, 1.8, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore(); // Fin de máscara de recorte
+
+                // 4. Borde delantero de tierra para integrar al conejito saliendo del agujero
+                ctx.fillStyle = '#2d4731';
+                ctx.beginPath();
+                ctx.ellipse(0, 4.5, 25, 6, 0, 0, Math.PI);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
+        // CLASE: PÁJARO MINIMALISTA (VUELA Y SE POSA)
+        // ==========================================
+        class Bird {
+            constructor(index) {
+                this.index = index;
+                this.resetPosition();
+                // Estados: 'flying_in', 'perched', 'flying_out', 'waiting'
+                this.state = 'waiting';
+                this.waitTimer = 1000 + index * 3200;
+                this.perchTimer = 0;
+                this.targetTree = null;
+                this.targetPoint = { x: width / 2, y: height / 2 };
+                this.wingPhase = Math.random() * Math.PI * 2;
+                this.facing = 1;
+            }
+
+            resetPosition() {
+                const fromLeft = Math.random() > 0.5;
+                this.x = fromLeft ? -40 : width + 40;
+                this.y = height * (0.15 + Math.random() * 0.25);
+                this.facing = fromLeft ? 1 : -1;
+            }
+
+            pickTreePerch() {
+                const foregroundTrees = trees.filter(t => t.layer === 1 && t.perchPoints.length > 0);
+                if (foregroundTrees.length === 0) return false;
+                this.targetTree = foregroundTrees[Math.floor(Math.random() * foregroundTrees.length)];
+                const pt = this.targetTree.perchPoints[Math.floor(Math.random() * this.targetTree.perchPoints.length)];
+                this.targetPoint = { x: pt.x, y: pt.y };
+                return true;
+            }
+
+            update(dt, t) {
+                this.wingPhase += dt * 0.011; // Aleteo tranquilo
+
+                if (this.state === 'waiting') {
+                    this.waitTimer -= dt;
+                    if (this.waitTimer <= 0 && this.pickTreePerch()) {
+                        this.resetPosition();
+                        this.state = 'flying_in';
+                    }
+                } else if (this.state === 'flying_in') {
+                    // Actualizar punto de destino dinámico por si el árbol se mece con el viento
+                    if (this.targetTree && this.targetTree.perchPoints[0]) {
+                        this.targetPoint = this.targetTree.perchPoints[0];
+                    }
+
+                    const dx = this.targetPoint.x - this.x;
+                    const dy = this.targetPoint.y - this.y;
+                    const dist = Math.hypot(dx, dy);
+
+                    this.facing = dx >= 0 ? 1 : -1;
+
+                    if (dist < 6) {
+                        this.state = 'perched';
+                        this.perchTimer = 4500 + Math.random() * 4500; // Descansa en el árbol
+                    } else {
+                        // Vuelo suave con ligera ondulación
+                        const speed = Math.min(2.2, Math.max(0.85, dist * 0.014));
+                        this.x += (dx / dist) * speed;
+                        this.y += (dy / dist) * speed + Math.sin(t * 0.004 + this.index) * 0.35;
+                    }
+                } else if (this.state === 'perched') {
+                    // Sigue el balanceo exacto de la copa del árbol donde está posado
+                    if (this.targetTree && this.targetTree.perchPoints[0]) {
+                        this.x = this.targetTree.perchPoints[0].x;
+                        this.y = this.targetTree.perchPoints[0].y;
+                    }
+                    this.perchTimer -= dt;
+                    if (this.perchTimer <= 0) {
+                        this.state = 'flying_out';
+                        this.exitSide = Math.random() > 0.5 ? 1 : -1;
+                        this.facing = this.exitSide;
+                    }
+                } else if (this.state === 'flying_out') {
+                    this.x += this.exitSide * 1.9;
+                    this.y -= 0.75 + Math.sin(t * 0.004) * 0.3;
+
+                    if (this.x < -60 || this.x > width + 60 || this.y < -50) {
+                        this.state = 'waiting';
+                        this.waitTimer = 3000 + Math.random() * 5000;
+                    }
+                }
+            }
+
+            draw(ctx) {
+                if (this.state === 'waiting') return;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.scale(this.facing, 1);
+
+                // Cuerpo redondeado estilo minimalista lavanda/menta
+                ctx.fillStyle = COLORS.birdBody;
+                ctx.beginPath();
+                ctx.ellipse(0, -5, 8.5, 6, -0.15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cabeza
+                ctx.beginPath();
+                ctx.arc(6.5, -8.5, 4.8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Colita
+                ctx.beginPath();
+                ctx.moveTo(-7, -5);
+                ctx.lineTo(-14, -8);
+                ctx.lineTo(-12, -3);
+                ctx.closePath();
+                ctx.fill();
+
+                // Piquito suave verde menta
+                ctx.fillStyle = COLORS.mint;
+                ctx.beginPath();
+                ctx.moveTo(11, -9);
+                ctx.lineTo(15, -7.5);
+                ctx.lineTo(11, -6.5);
+                ctx.closePath();
+                ctx.fill();
+
+                // Ojito
+                ctx.fillStyle = '#1b2e1e';
+                ctx.beginPath();
+                ctx.arc(7.8, -9, 1.1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ala (aletea suavemente al volar, plegada al posarse)
+                ctx.fillStyle = COLORS.birdWing;
+                ctx.beginPath();
+                if (this.state === 'perched') {
+                    ctx.ellipse(-1, -5, 5.5, 3, 0.2, 0, Math.PI * 2);
+                } else {
+                    const flap = Math.sin(this.wingPhase) * 9;
+                    ctx.moveTo(-3, -6);
+                    ctx.quadraticCurveTo(1, -14 - flap, 5, -6);
+                    ctx.closePath();
+                }
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
+        // INICIALIZACIÓN Y DISTRIBUCIÓN DEL PAISAJE
+        // ==========================================
+        function initScene() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+
+            trees = [];
+            bunnies = [];
+            grassBlades = [];
+
+            const isMobile = width < 640;
+
+            // Árboles en los bordes izquierdo y derecho para enmarcar el texto central sin taparlo
+            const treeConfigs = isMobile ? [
+                // Móvil: árboles en los extremos
+                { x: width * 0.08, scale: 0.72, layer: 0, lav: false },
+                { x: width * 0.92, scale: 0.75, layer: 0, lav: false },
+                { x: width * 0.12, scale: 0.92, layer: 1, lav: true },
+                { x: width * 0.88, scale: 0.96, layer: 1, lav: true }
+            ] : [
+                // Escritorio / Tablet: bosque equilibrado alrededor
+                { x: width * 0.05, scale: 0.82, layer: 0, lav: false },
+                { x: width * 0.23, scale: 0.75, layer: 0, lav: true },
+                { x: width * 0.77, scale: 0.78, layer: 0, lav: false },
+                { x: width * 0.95, scale: 0.85, layer: 0, lav: true },
+
+                { x: width * 0.11, scale: 1.15, layer: 1, lav: true },
+                { x: width * 0.27, scale: 0.95, layer: 1, lav: true },
+                { x: width * 0.73, scale: 0.98, layer: 1, lav: true },
+                { x: width * 0.89, scale: 1.18, layer: 1, lav: true }
+            ];
+
+            treeConfigs.forEach(cfg => {
+                trees.push(new Tree(cfg.x, cfg.scale, cfg.layer, cfg.lav));
+            });
+
+            // Madrigueras con conejitos en la parte inferior
+            const bunnyPositions = isMobile
+                ? [width * 0.28, width * 0.72]
+                : [width * 0.19, width * 0.42, width * 0.62, width * 0.82];
+
+            bunnyPositions.forEach((bx, idx) => {
+                bunnies.push(new BunnyBurrow(bx, isMobile ? 0.88 : 1.0));
+            });
+
+            // Briznas de hierba decorativas a lo largo del suelo
+            const bladeCount = Math.floor(width / 22);
+            for (let i = 0; i < bladeCount; i++) {
+                grassBlades.push({
+                    x: (i / bladeCount) * width + (Math.random() * 14 - 7),
+                    h: 7 + Math.random() * 10,
+                    phase: Math.random() * Math.PI * 2,
+                    color: Math.random() > 0.3 ? '#36593c' : '#4a784e'
+                });
+            }
+
+            // Hojas iniciales distribuidas suavemente
+            if (leaves.length === 0) {
+                const leafCount = isMobile ? 16 : 26;
+                for (let i = 0; i < leafCount; i++) {
+                    leaves.push(new Leaf(true));
+                }
+            }
+
+            // Pájaros minimalistas (3 en escritorio, 2 en móvil)
+            if (birds.length === 0) {
+                const birdCount = isMobile ? 2 : 3;
+                for (let i = 0; i < birdCount; i++) {
+                    birds.push(new Bird(i));
+                }
+            }
+        }
+
+        // ==========================================
+        // DIBUJO DEL TERRENO Y HIERBA
+        // ==========================================
+        function drawLandscape(t, windForce) {
+            // Colina lejana sutil
+            ctx.fillStyle = COLORS.hillBack;
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            for (let x = 0; x <= width; x += 25) {
+                const y = height * 0.83 + Math.sin(x * 0.0018 + 0.8) * (height * 0.03);
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(width, height);
+            ctx.closePath();
+            ctx.fill();
+
+            // Árboles de fondo
+            trees.filter(tr => tr.layer === 0).forEach(tr => tr.draw(ctx, t, windForce));
+
+            // Colina principal donde apoyan los árboles y madrigueras
+            ctx.fillStyle = COLORS.hillFront;
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            for (let x = 0; x <= width; x += 15) {
+                ctx.lineTo(x, getGroundY(x));
+            }
+            ctx.lineTo(width, height);
+            ctx.closePath();
+            ctx.fill();
+
+            // Briznas de hierba meciéndose con la misma brisa
+            grassBlades.forEach(b => {
+                const gy = getGroundY(b.x) + 3;
+                const sway = Math.sin(t * 0.0018 + b.phase) * 3 + windForce * 6;
+                ctx.strokeStyle = b.color;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(b.x, gy);
+                ctx.quadraticCurveTo(b.x + sway * 0.5, gy - b.h * 0.6, b.x + sway, gy - b.h);
+                ctx.stroke();
+            });
+        }
+
+        // ==========================================
+        // BUCLE PRINCIPAL DE ANIMACIÓN (60 FPS)
+        // ==========================================
+        let lastTime = 0;
+        function animate(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = Math.min(timestamp - lastTime, 50); // Evitar saltos bruscos si se cambia de pestaña
+            lastTime = timestamp;
+            time += dt;
+
+            // Suavizar impulso de brisa manual
+            gustBoost *= 0.985;
+            // Brisa natural lenta y armónica
+            const naturalWind = (Math.sin(time * 0.0006) + Math.sin(time * 0.0013) * 0.5) * 0.35;
+            const totalWind = naturalWind + gustBoost;
+
+            // Limpiar lienzo con el verde bosque profundo
+            ctx.fillStyle = COLORS.bg;
+            ctx.fillRect(0, 0, width, height);
+
+            // 1. Paisaje y árboles traseros
+            drawLandscape(time, totalWind);
+
+            // 2. Árboles en primer plano
+            trees.filter(tr => tr.layer === 1).forEach(tr => {
+                tr.update(dt);
+                tr.draw(ctx, time, totalWind);
+            });
+
+            // 3. Madrigueras y conejitos
+            bunnies.forEach(bunny => {
+                bunny.update(dt, time);
+                bunny.draw(ctx);
+            });
+
+            // 4. Hojas flotando en el aire
+            leaves.forEach(leaf => {
+                leaf.update(time, totalWind);
+                leaf.draw(ctx);
+            });
+
+            // 5. Pájaros volando y posándose en las copas
+            birds.forEach(bird => {
+                bird.update(dt, time);
+                bird.draw(ctx);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // ==========================================
+        // INTERACTIVIDAD SUAVE CON EL USUARIO
+        // ==========================================
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            // Si hace clic cerca de un árbol, lo mece suavemente y suelta un par de hojas
+            trees.forEach(tr => {
+                if (Math.abs(clickX - tr.x) < 65 * tr.scale && clickY > height * 0.45) {
+                    tr.extraSway = (clickX < tr.x ? 1 : -1) * 0.08;
+                    const extraLeaf = new Leaf(false);
+                    extraLeaf.x = tr.x + (Math.random() * 40 - 20);
+                    extraLeaf.y = getGroundY(tr.x) - 85 * tr.scale;
+                    leaves.push(extraLeaf);
+                    if (leaves.length > 38) leaves.shift();
+                }
+            });
+
+            // Si hace clic cerca de una madriguera, el conejito se asoma curioso
+            bunnies.forEach(bunny => {
+                if (Math.abs(clickX - bunny.x) < 55 && Math.abs(clickY - getGroundY(bunny.x)) < 55) {
+                    bunny.triggerPeek();
+                }
+            });
+        });
+
+        // Botón "Sentir la brisa": envía una ráfaga de viento suave y hace asomar a un conejito
+        document.getElementById('btnBreeze').addEventListener('click', () => {
+            gustBoost = 0.85;
+            const hiddenBunnies = bunnies.filter(b => b.state === 'hidden');
+            if (hiddenBunnies.length > 0) {
+                hiddenBunnies[Math.floor(Math.random() * hiddenBunnies.length)].triggerPeek();
+            }
+        });
+
+        // Botón "Comenzar a plantar": muestra mensaje de bienvenida interactivo
+        const modal = document.getElementById('welcomeModal');
+        document.getElementById('btnStart').addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        });
+
+        window.addEventListener('resize', initScene);
+
+        window.onload = function () {
+            initScene();
+            requestAnimationFrame(animate);
+        };
+    </script>
+</body>
+</html>
